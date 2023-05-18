@@ -39,7 +39,6 @@ class ChatFragment : Fragment(), SocketInterface {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val x = 15
         binding = FragmentChatBinding.inflate(inflater,container,false)
         repository.socketInterface = this
         selectFileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result->
