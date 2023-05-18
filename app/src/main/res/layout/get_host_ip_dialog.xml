@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical"
+    android:layout_width="500dp"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@android:color/darker_gray">
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/host_etx"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number|numberDecimal"
+            android:textColor="@color/blue_light"
+            android:digits="0123456789."
+            android:hint="Enter host ip to connect"
+            android:background="@drawable/edittext_background"
+            />
+    </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/connect_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="connect"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp" />
+
+    </LinearLayout>
