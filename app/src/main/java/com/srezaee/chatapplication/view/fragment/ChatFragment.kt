@@ -11,6 +11,7 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -35,6 +36,7 @@ class ChatFragment : Fragment(), SocketInterface {
     lateinit var binding:FragmentChatBinding
     var senderIp:String? = ""
     var selectFileLauncher:ActivityResultLauncher<Intent>? = null
+    var messageAdapter:MessageAdapter? = null
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -69,8 +71,11 @@ class ChatFragment : Fragment(), SocketInterface {
         senderIp = arguments?.getString("ip")
         binding.senderIpTxt.text = "his/her ip : $senderIp"
 
-        binding.recyclerview.layoutManager = LinearLayoutManager(requireContext())
-        binding.recyclerview.adapter = MessageAdapter(requireContext(), arrayListOf() )
+        messageAdapter = MessageAdapter(requireContext(), arrayListOf() )
+        val linearLayoutManager = LinearLayoutManager(requireContext())
+        linearLayoutManager.stackFromEnd = true
+        binding.recyclerview.layoutManager = linearLayoutManager
+        binding.recyclerview.adapter = messageAdapter
         inintListenners()
         return binding.root
     }
@@ -116,31 +121,35 @@ class ChatFragment : Fragment(), SocketInterface {
         binding.fileBtn.setOnClickListener{
             if (Build.VERSION.SDK_INT >= 33){
 //                ActivityCompat.requestPermissions(requireActivity(),arrayOf(Manifest.permission.READ_MEDIA_IMAGES,Manifest.permission.READ_MEDIA_AUDIO,Manifest.permission.READ_MEDIA_VIDEO),0)
-                val intent = Intent(Intent.ACTION_PICK)
-                val selectFileBinding = SelectFileDialogBinding.inflate(layoutInflater)
-                val dialog = AlertDialog.Builder(requireContext())
-                    .setView(selectFileBinding.root)
-                    .create()
-                selectFileBinding.apply {
-                    imagevideoImg.setOnClickListener{
-                        intent.type = "image/* video/*"
-                        selectFileLauncher!!.launch(intent)
-                        dialog.dismiss()
+                try{
+                    val intent = Intent(Intent.ACTION_PICK)
+                    val selectFileBinding = SelectFileDialogBinding.inflate(layoutInflater)
+                    val dialog = AlertDialog.Builder(requireContext())
+                        .setView(selectFileBinding.root)
+                        .create()
+                    selectFileBinding.apply {
+                        imagevideoImg.setOnClickListener {
+                            intent.type = "image/* video/*"
+                            selectFileLauncher!!.launch(intent)
+                            dialog.dismiss()
+                        }
+                        musicImg.setOnClickListener {
+                            intent.type = "audio/*"
+                            selectFileLauncher!!.launch(intent)
+                            dialog.dismiss()
+                        }
                     }
-                    musicImg.setOnClickListener{
-                        intent.type = "audio/*"
-                        selectFileLauncher!!.launch(intent)
-                        dialog.dismiss()
-                    }
-                }
 
-                dialog.window?.apply {
-                    val wlp = attributes
-                    wlp.verticalMargin = 0.35f
-                    attributes = wlp
-                    setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
+                    dialog.window?.apply {
+                        val wlp = attributes
+                        wlp.verticalMargin = 0.35f
+                        attributes = wlp
+                        setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
+                    }
+                    dialog.show()
+                }catch (ex:Exception){
+                    Toast.makeText(requireContext(), ex.message, Toast.LENGTH_SHORT).show()
                 }
-                dialog.show()
 
             }else if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED){
                 ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),1)
@@ -178,7 +187,7 @@ class ChatFragment : Fragment(), SocketInterface {
 
     private fun sendMessage(message:SendMessage, pathOrText:String){
         repository.sendMessage(message,pathOrText) {
-            (binding.recyclerview.adapter as MessageAdapter).apply {
+            messageAdapter!!.apply {
                 if(messages.isEmpty()){
                     binding.messageEtx.text.clear()
                     messages.add(Message(message.type, pathOrText, "user") to it)
@@ -223,7 +232,7 @@ class ChatFragment : Fragment(), SocketInterface {
 
     override fun onReceive(sender:String,progress:Int,content:ReceiveMessage) {
         if (sender==senderIp){
-            (binding.recyclerview.adapter as MessageAdapter).apply {
+            messageAdapter!!.apply {
                 if (messages.isEmpty()){
                     messages.add(Message(content.type,content.content,sender) to progress)
                      notifyItemChanged(0)

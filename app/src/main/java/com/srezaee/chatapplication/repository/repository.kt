@@ -24,7 +24,7 @@ import java.util.*
 
 object repository {
     const val PORT = 9998
-    const val HOST = "192.168.248.8"
+    const val HOST = "Your host ip"//todo:set your host ip
     const val BUFFER_SIZE = 16*1024
     var ip = ""
     var userList : List<String> = listOf()
